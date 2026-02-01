@@ -10,7 +10,7 @@ colorama==0.4.6
 comtypes==1.4.15
 cryptography==46.0.4
 distro==1.9.0
-Django==6.0.1
+Django>=4.2,<5.0
 filelock==3.20.3
 fsspec==2026.1.0
 google-ai-generativelanguage==0.6.15
