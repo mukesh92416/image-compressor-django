@@ -33,6 +33,17 @@
                 min="10"
                 required
             >
+<div class="format-toggle">
+    <label>
+        <input type="radio" name="format" value="JPEG" checked>
+        JPG
+    </label>
+
+    <label>
+        <input type="radio" name="format" value="PNG">
+        PNG
+    </label>
+</div>
 
            <button type="submit" id="submitBtn">
     <span class="btn-text">Compress Image</span>
@@ -48,14 +59,56 @@
     </div>
 </div>
 <script>
-    const form = document.querySelector("form");
-    const btn = document.getElementById("submitBtn");
+const form = document.getElementById("compressForm");
+const btn = document.getElementById("submitBtn");
 
-    form.addEventListener("submit", () => {
-        btn.classList.add("loading");
-        btn.disabled = true;
-    });
+form.addEventListener("submit", async (e) => {
+    e.preventDefault(); // STOP normal form submit
+
+    btn.classList.add("loading");
+    btn.disabled = true;
+
+    const formData = new FormData(form);
+
+    try {
+        const response = await fetch("/", {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error("Compression failed");
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+
+        // Try to get filename from headers
+        const disposition = response.headers.get("Content-Disposition");
+        if (disposition && disposition.includes("filename=")) {
+            a.download = disposition.split("filename=")[1].replace(/"/g, "");
+        } else {
+            a.download = "compressed_image";
+        }
+
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+    } catch (err) {
+        alert("Something went wrong. Please try again.");
+    } finally {
+        // ✅ THIS IS THE FIX
+        btn.classList.remove("loading");
+        btn.disabled = false;
+    }
+});
 </script>
+
 
 </body>
 </html>

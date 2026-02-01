@@ -92,6 +92,21 @@ input[type="number"] {
     margin-bottom: 18px;
     font-size: 14px;
 }
+.format-toggle {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 18px;
+    justify-content: center;
+}
+
+.format-toggle label {
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.format-toggle input {
+    margin-right: 6px;
+}
 
 input[type="file"] {
     background: #f7f7f7;

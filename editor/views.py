@@ -11,7 +11,9 @@ def index(request):
 
         image = request.FILES.get("image")
         target_kb = request.POST.get("target_kb")
+        output_format = request.POST.get("format", "JPEG")
 
+        # ---------- BASIC VALIDATION ----------
         if not image:
             error = "Please select an image."
             return render(request, "editor/index.html", {"error": error})
@@ -29,25 +31,29 @@ def index(request):
             error = "Enter a valid number (minimum 10 KB)."
             return render(request, "editor/index.html", {"error": error})
 
+        # ---------- IMAGE PROCESS ----------
         try:
             img = Image.open(image)
 
             if img.mode in ("RGBA", "P"):
                 img = img.convert("RGB")
 
-            quality = 95
             buffer = io.BytesIO()
+            quality = 95
 
             while quality > 10:
                 buffer.seek(0)
                 buffer.truncate(0)
 
-                img.save(
-                    buffer,
-                    format="JPEG",
-                    quality=quality,
-                    optimize=True
-                )
+                if output_format == "PNG":
+                    img.save(buffer, format="PNG", optimize=True)
+                else:
+                    img.save(
+                        buffer,
+                        format="JPEG",
+                        quality=quality,
+                        optimize=True
+                    )
 
                 if buffer.tell() <= target_bytes:
                     break
@@ -60,10 +66,16 @@ def index(request):
             error = "Image compression failed."
             return render(request, "editor/index.html", {"error": error})
 
-        response = HttpResponse(buffer, content_type="image/jpeg")
-        response["Content-Disposition"] = (
-            f'attachment; filename="compressed_{target_kb}kb.jpg"'
-        )
+        # ---------- RESPONSE ----------
+        if output_format == "PNG":
+            content_type = "image/png"
+            filename = f"compressed_{target_kb}kb.png"
+        else:
+            content_type = "image/jpeg"
+            filename = f"compressed_{target_kb}kb.jpg"
+
+        response = HttpResponse(buffer, content_type=content_type)
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
 
     return render(request, "editor/index.html")
