@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Image Compressor – Reduce Image Size Online</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="card">
+
+        <h1>Image Compressor</h1>
+        <p class="subtitle">Compress images to exact KB without losing dimensions</p>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% if error %}
+                <div class="error">{{ error }}</div>
+            {% endif %}
+
+            <label class="label">Upload Image</label>
+            <input type="file" name="image" required>
+
+            <label class="label">Target Size (KB)</label>
+            <input
+                type="number"
+                name="target_kb"
+                placeholder="e.g. 50"
+                min="10"
+                required
+            >
+
+           <button type="submit" id="submitBtn">
+    <span class="btn-text">Compress Image</span>
+    <span class="loader"></span>
+</button>
+
+        </form>
+
+        <div class="note">
+            Supported formats: JPG, PNG • Free & Secure
+        </div>
+
+    </div>
+</div>
+<script>
+    const form = document.querySelector("form");
+    const btn = document.getElementById("submitBtn");
+
+    form.addEventListener("submit", () => {
+        btn.classList.add("loading");
+        btn.disabled = true;
+    });
+</script>
+
+</body>
+</html>
