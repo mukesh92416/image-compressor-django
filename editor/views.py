@@ -8,19 +8,20 @@ def index(request):
     error = None
 
     if request.method == "POST":
-
         image = request.FILES.get("image")
         target_kb = request.POST.get("target_kb")
         output_format = request.POST.get("format", "JPEG")
 
         # ---------- BASIC VALIDATION ----------
         if not image:
-            error = "Please select an image."
-            return render(request, "editor/index.html", {"error": error})
+            return render(request, "editor/index.html", {
+                "error": "Please select an image."
+            })
 
         if not target_kb:
-            error = "Please enter target size in KB."
-            return render(request, "editor/index.html", {"error": error})
+            return render(request, "editor/index.html", {
+                "error": "Please enter target size in KB."
+            })
 
         try:
             target_kb = int(target_kb)
@@ -28,8 +29,9 @@ def index(request):
                 raise ValueError
             target_bytes = target_kb * 1024
         except ValueError:
-            error = "Enter a valid number (minimum 10 KB)."
-            return render(request, "editor/index.html", {"error": error})
+            return render(request, "editor/index.html", {
+                "error": "Enter a valid number (minimum 10 KB)."
+            })
 
         # ---------- IMAGE PROCESS ----------
         try:
@@ -39,15 +41,21 @@ def index(request):
                 img = img.convert("RGB")
 
             buffer = io.BytesIO()
-            quality = 95
 
-            while quality > 10:
-                buffer.seek(0)
-                buffer.truncate(0)
+            # ---------- PNG (single pass, NO loop) ----------
+            if output_format == "PNG":
+                img.save(buffer, format="PNG", optimize=True)
+                content_type = "image/png"
+                filename = f"compressed_{target_kb}kb.png"
 
-                if output_format == "PNG":
-                    img.save(buffer, format="PNG", optimize=True)
-                else:
+            # ---------- JPEG (quality loop) ----------
+            else:
+                quality = 95
+
+                while quality > 10:
+                    buffer.seek(0)
+                    buffer.truncate(0)
+
                     img.save(
                         buffer,
                         format="JPEG",
@@ -55,27 +63,24 @@ def index(request):
                         optimize=True
                     )
 
-                if buffer.tell() <= target_bytes:
-                    break
+                    if buffer.tell() <= target_bytes:
+                        break
 
-                quality -= 5
+                    quality -= 5
+
+                content_type = "image/jpeg"
+                filename = f"compressed_{target_kb}kb.jpg"
 
             buffer.seek(0)
 
+            # ---------- RESPONSE ----------
+            response = HttpResponse(buffer, content_type=content_type)
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
+            return response
+
         except Exception:
-            error = "Image compression failed."
-            return render(request, "editor/index.html", {"error": error})
-
-        # ---------- RESPONSE ----------
-        if output_format == "PNG":
-            content_type = "image/png"
-            filename = f"compressed_{target_kb}kb.png"
-        else:
-            content_type = "image/jpeg"
-            filename = f"compressed_{target_kb}kb.jpg"
-
-        response = HttpResponse(buffer, content_type=content_type)
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-        return response
+            return render(request, "editor/index.html", {
+                "error": "Image processing failed. Please try another image."
+            })
 
     return render(request, "editor/index.html")
