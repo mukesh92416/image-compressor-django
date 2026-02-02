@@ -5,8 +5,6 @@ import io
 
 
 def index(request):
-    error = None
-
     if request.method == "POST":
         image = request.FILES.get("image")
         target_kb = request.POST.get("target_kb")
@@ -42,9 +40,13 @@ def index(request):
 
             buffer = io.BytesIO()
 
-            # ---------- PNG (single pass, NO loop) ----------
+            # ---------- PNG (single pass) ----------
             if output_format == "PNG":
+                buffer.seek(0)
+                buffer.truncate(0)
+
                 img.save(buffer, format="PNG", optimize=True)
+
                 content_type = "image/png"
                 filename = f"compressed_{target_kb}kb.png"
 
@@ -84,3 +86,17 @@ def index(request):
             })
 
     return render(request, "editor/index.html")
+
+
+# ---------- STATIC PAGES ----------
+
+def privacy(request):
+    return render(request, "editor/privacy.html")
+
+
+def about(request):
+    return render(request, "editor/about.html")
+
+
+def contact(request):
+    return render(request, "editor/contact.html")
