@@ -213,3 +213,13 @@ button:disabled {
   align-items: center;
   justify-content: center;
 }
+.description {
+  font-weight: 400;
+  opacity: 0.9;
+  letter-spacing: 0.3px;
+}
+.description {
+  font-weight: 400;
+  opacity: 0.9;
+  letter-spacing: 0.3px;
+}
