@@ -100,3 +100,11 @@ def about(request):
 
 def contact(request):
     return render(request, "editor/contact.html")
+def blog1(request):
+    return render(request, "editor/blog1.html")
+
+def blog2(request):
+    return render(request, "editor/blog2.html")
+
+def blog3(request):
+    return render(request, "editor/blog3.html")

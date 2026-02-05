@@ -6,6 +6,9 @@ urlpatterns = [
     path("privacy/", views.privacy, name="privacy"),
     path("about/", views.about, name="about"),
     path("contact/", views.contact, name="contact"),
+    path("blog/photo-20kb/", views.blog1),
+path("blog/jpg-to-png/", views.blog2),
+path("blog/compress-image/", views.blog3),
 ]
 from django.http import HttpResponse
 
